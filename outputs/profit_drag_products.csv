@@ -1,0 +1,5 @@
+product_category,product_sub_category,total_sales,total_profit,order_lines
+Furniture,Tables,1896008.14,-99062.53,361
+Furniture,Bookcases,822652.04,-33582.13,189
+"Office Supplies","Scissors, Rulers and Trimmers",80996.31,-7799.25,144
+"Office Supplies","Rubber Bands",15006.63,-102.67,179

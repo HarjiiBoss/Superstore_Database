@@ -1,0 +1,5 @@
+customer_segment,total_orders,total_sales,total_profit,avg_order_value,profit_margin_pct
+Corporate,2002,5498904.88,599745.92,2746.71,10.91
+"Home Office",1341,3564763.88,318354.10,2658.29,8.93
+"Small Business",1077,2788320.99,315707.96,2588.97,11.32
+Consumer,1076,3063611.08,287959.98,2847.22,9.40

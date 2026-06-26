@@ -1,0 +1,4 @@
+ship_mode,order_count,avg_shipping_cost,total_sales,shipping_cost_pct_of_sales
+"Delivery Truck",1146,45.35,6224878.72,0.83
+"Express Air",983,7.99,1184418.90,0.66
+"Regular Air",6270,7.66,7506303.21,0.64

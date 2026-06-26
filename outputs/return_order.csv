@@ -1,0 +1,25 @@
+product_category,region,total_orders,returned_orders,return_rate_pct,total_sales,total_profit
+Technology,Ontario,391,51,13.73,1026163.73,173768.86
+Furniture,Yukon,105,14,13.64,335898.07,10555.26
+Furniture,Ontario,355,44,13.55,1109617.50,19886.86
+Furniture,Prarie,294,35,12.15,919191.13,30551.24
+Technology,Prarie,386,47,12.15,1198023.05,207349.27
+"Office Supplies",Ontario,802,100,12.12,927431.25,153212.86
+Furniture,"Northwest Territories",76,7,10.59,282837.91,7451.25
+Furniture,Quebec,158,17,10.59,605784.14,-760.80
+"Office Supplies",Prarie,759,78,10.45,720090.43,83259.68
+"Office Supplies",Yukon,243,26,10.20,221978.16,21059.44
+"Office Supplies",West,863,84,10.10,797510.76,116666.84
+"Office Supplies",Atlantic,473,47,9.61,478464.42,66970.45
+Technology,West,469,46,9.47,1627049.12,149417.09
+Technology,Yukon,130,12,9.42,417991.14,42234.55
+Furniture,West,366,35,9.38,1172989.39,30924.65
+Furniture,Atlantic,213,20,9.17,708726.78,15345.65
+Technology,Quebec,159,14,8.77,552588.26,98205.22
+Technology,Atlantic,245,21,8.58,827057.00,156644.51
+"Office Supplies","Northwest Territories",166,16,7.66,216848.93,36994.04
+Technology,"Northwest Territories",93,7,7.00,301160.49,56207.76
+"Office Supplies",Quebec,380,23,6.36,351822.68,42982.17
+"Office Supplies",Nunavut,40,1,2.00,38615.47,-3124.02
+Technology,Nunavut,14,0,0.00,34215.40,2486.26
+Furniture,Nunavut,11,0,0.00,43545.61,3478.88

@@ -1,0 +1,4 @@
+product_category,total_orders,loss_orders,loss_rate_pct,total_loss_amount
+Furniture,1724,922,53.5,-435589.38
+"Office Supplies",4610,2461,53.4,-284518.92
+Technology,2065,881,42.7,-382394.37
