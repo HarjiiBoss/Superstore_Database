@@ -1,8 +1,8 @@
 -- ============================================================
 -- PROJECT: Sales Dataset Exploration II — Superstore Database
--- AUTHOR:  Taofeek Salami | HarjiiBoss
+-- AUTHOR:  Taofeek Salami
 -- DATE:    2026-06-26
--- SOURCE:  Superstore Database File.xlsx (Kaggle)
+-- SOURCE:  Superstore Database File.xlsx
 -- ============================================================
 -- DESCRIPTION:
 --   Creates and populates the `superstore` MySQL database with
@@ -20,10 +20,6 @@ CREATE DATABASE IF NOT EXISTS superstore
     COLLATE utf8mb4_unicode_ci;
 
 USE superstore;
-
--- ────────────────────────────────────────────────────────────
--- PHASE 1: TABLE DEFINITIONS
--- ────────────────────────────────────────────────────────────
 
 -- Table 1: orders (central fact table — 8,399 rows)
 CREATE TABLE IF NOT EXISTS orders (
@@ -96,17 +92,39 @@ INSERT INTO regional_managers (region, manager) VALUES
   ('Central', 'Pat'),
   ('East',    'Pat'),
   ('South',   'Pat');
+  
+-- ────────────────────────────────────────────────────────────
+-- PHASE 3: ETL AUTOMATION & DOCUMENTATION
+-- ────────────────────────────────────────────────────────────
+-- DESCRIPTION:
+--   The production tables (`orders`, `customers`, and `returns`)
+--   were successfully populated utilizing an automated Python/Pandas
+--   ETL pipeline to handle data type mapping and normalization.
+--
+-- EXECUTION METHOD DETAILS:
+--   • Pipeline Script:  superstore_database.ipynb (Jupyter Notebook Notebook Engine)
+--   • Data Connector:  SQLAlchemy + mysql-connector-python
+--   • Target Database:  superstore (MySQL 8.0+ Local Instance)
+--
+-- METRICS & AUDIT LOG:
+--   • Data Source:      Superstore Database File.xlsx
+--   • Orders Loaded:    8,399 rows (Central Fact Table)
+--   • Customers Loaded: 5,496 rows (Normalized Order-Customer Map)
+--   • Returns Loaded:   572 rows   (Transaction Status Sync)
+--   • Status:           Execution Complete — 100% Integrity Confirmed.
+-- ────────────────────────────────────────────────────────────
 
--- ────────────────────────────────────────────────────────────
--- PHASE 3: ETL NOTE
--- ────────────────────────────────────────────────────────────
--- The orders, customers, and returns tables are populated via
--- Python/Pandas ETL script (superstore_etl.py).
--- Command: python3 superstore_etl.py
--- Source:  Superstore Database File.xlsx
--- Rows loaded: orders=8399, customers=5496, returns=572
--- ────────────────────────────────────────────────────────────
+SELECT * 
+FROM orders
+LIMIT 10;
 
+SELECT * 
+FROM customers
+LIMIT 10;
+
+SELECT * 
+FROM returns
+LIMIT 10;
 
 -- ============================================================
 -- PHASE 4: 10 BUSINESS QUESTIONS
@@ -122,9 +140,9 @@ INSERT INTO regional_managers (region, manager) VALUES
 -- BQ-01 | How has total revenue trended year-over-year?
 -- RATIONALE: Identifies whether the business is growing,
 --            stagnating, or declining at the top line.
--- ANSWER:    Revenue peaked in 2009 ($4.2M) and declined
---            through 2011 ($3.4M) before recovering in 2012
---            ($3.7M). 2010–2012 are consistently below 2009.
+-- ANSWER:    Revenue peaked in 2009 ($4.21M), declined through
+--            2011 ($3.44M), then recovered to $3.72M in 2012,
+--            although it remained below the 2009 peak.
 -- ────────────────────────────────────────────────────────────
 SELECT
     YEAR(order_date)            AS order_year,
@@ -141,9 +159,11 @@ ORDER BY order_year;
 --          profit margin?
 -- RATIONALE: Margin — not revenue — shows where the business
 --            actually creates value.
--- ANSWER:    Technology leads at 14.8% margin, Office Supplies
---            at 13.8%. Furniture earns only 2.3% despite being
---            the second-highest revenue category — a margin risk.
+-- ANSWER:    Technology delivers the highest profit margin (14.8%),
+--            followed by Office Supplies (13.8%). Despite generating
+--            the second-highest revenue, Furniture achieves only
+--            a 2.3% margin, indicating that strong sales are not
+--            are not translating into profitability.
 -- ────────────────────────────────────────────────────────────
 SELECT
     product_category,
@@ -157,20 +177,23 @@ ORDER BY profit_margin_pct DESC;
 
 -- ────────────────────────────────────────────────────────────
 -- BQ-03 | Which product sub-categories are destroying profit
---          (bottom 5 by total profit)?
+--         (bottom 5 by total profit)?
 -- RATIONALE: Pinpoints the drag items that offset gains
 --            elsewhere — critical for SKU rationalisation.
--- ANSWER:    Tables (-$64K), Bookcases (-$4K) and Scissors
---            (-$2K) are the top loss sub-categories.
+-- ANSWER:    Tables (-$99.1K) is by far the largest loss-making sub-category,
+--            followed by Bookcases (-$33.6K) and Scissors, Rulers & Trimmers (-$7.8K).
+--            Only four sub-categories generate net losses, with
+--            Tables accounting for the vast majority of the profit drag.   
 -- ────────────────────────────────────────────────────────────
 SELECT
     product_category,
     product_sub_category,
-    ROUND(SUM(sales), 2)   AS total_sales,
-    ROUND(SUM(profit), 2)  AS total_profit,
-    COUNT(*)               AS order_lines
+    ROUND(SUM(sales), 2) AS total_sales,
+    ROUND(SUM(profit), 2) AS total_profit,
+    COUNT(*) AS order_lines
 FROM orders
 GROUP BY product_category, product_sub_category
+HAVING SUM(profit) < 0
 ORDER BY total_profit ASC
 LIMIT 5;
 
@@ -179,9 +202,11 @@ LIMIT 5;
 -- BQ-04 | Does a higher discount always lead to lower profit?
 -- RATIONALE: Tests whether the discount strategy is working
 --            or actively eroding margins.
--- ANSWER:    Orders with 0% discount average $249 profit.
---            At 21–30% discount, average profit turns negative
---            (-$249). Discounting above 20% destroys value.
+-- ANSWER:    Orders with no discount average $248.93 profit.
+--            In this dataset, the small number of orders discounted above 20%
+--            had negative average profit (-$249.40), suggesting deep
+--            discounts may erode profitability. More data is needed
+--            before making a firm conclusion.
 -- ────────────────────────────────────────────────────────────
 SELECT
     CASE
@@ -202,14 +227,17 @@ ORDER BY MIN(discount);
 
 -- ────────────────────────────────────────────────────────────
 -- BQ-05 | Which shipping mode is most cost-efficient relative
---          to the revenue it supports?
+--         to the revenue it supports?
 -- RATIONALE: Shipping cost directly impacts net margin;
 --            over-use of premium modes reduces profit.
--- ANSWER:    Regular Air handles 74.7% of orders at only
---            $7.66 avg shipping cost. Delivery Truck costs
---            $45.35 per order but carries high-value orders.
---            Express Air is rarely used and most expensive
---            per dollar of sales generated.
+-- ANSWER:    Regular Air is the most cost-efficient shipping mode,
+--            handling 74.7% of orders while shipping costs represent
+--            just 0.64% of sales. Delivery Truck has the highest
+--            average shipping cost ($45.35/order) and the highest shipping
+--            cost relative to sales (0.83%), though it supports
+--            high-value orders. Express Air is used less frequently and
+--            performs similarly to Regular Air in shipping cost
+-- 			  as a percentage of sales (0.66%).
 -- ────────────────────────────────────────────────────────────
 SELECT
     ship_mode,
@@ -227,10 +255,12 @@ ORDER BY avg_shipping_cost DESC;
 --          what is their average order value?
 -- RATIONALE: Knowing which segment drives margin guides
 --            sales team prioritisation and CRM strategy.
--- ANSWER:    Corporate leads with $599K total profit across
---            3,076 orders. Home Office has the highest avg
---            order value at $1,754. Small Business generates
---            comparable profit to Consumer despite fewer orders.
+-- ANSWER:    Corporate is the most profitable customer segment, generating
+--            approximately $600K in total profit across 2,002 orders with
+--            a 10.91% profit margin. Consumer customers have the highest
+--            average order value ($2,847), while Small Business achieves the
+--            highest profit margin (11.32%), indicating strong profitability
+--            despite fewer orders.
 -- ────────────────────────────────────────────────────────────
 SELECT
     customer_segment,
@@ -246,13 +276,17 @@ ORDER BY total_profit DESC;
 
 -- ────────────────────────────────────────────────────────────
 -- BQ-07 | Which regions are underperforming on profit margin
---          relative to their sales volume?
+--         relative to their sales volume?
 -- RATIONALE: High-revenue regions with thin margins signal
 --            pricing, discount, or cost structure problems.
--- ANSWER:    West leads in revenue ($3.6M) but Ontario leads
---            in profit ($347K) with a stronger margin. Nunavut
---            has the least revenue ($116K) and weakest profit
---            ($2.8K) — lowest priority market.
+-- ANSWER:    West generates the highest revenue ($3.6M) but has a relatively
+--            modest 8.26% profit margin, indicating potential pricing
+--            or cost optimization opportunities. Nunavut is the weakest-performing
+--            region, with both the lowest sales ($116K) and the lowest
+--            profit margin (2.44%). In contrast, Ontario and Prairie
+--            combine strong sales with healthy 11.32% margins, while
+--            Northwest Territories achieves the highest margin (12.57%)
+-- 			  despite lower sales volume.
 -- ────────────────────────────────────────────────────────────
 SELECT
     region,
@@ -267,13 +301,15 @@ ORDER BY total_sales DESC;
 
 -- ────────────────────────────────────────────────────────────
 -- BQ-08 | What share of orders result in a net loss, and
---          which category has the most loss-making orders?
+--         which category has the most loss-making orders?
 -- RATIONALE: Loss-making orders are a hidden margin drain;
 --            identifying them by category reveals root causes.
--- ANSWER:    50.8% of all order lines are loss-making (4,264
---            of 8,399). Furniture has the highest loss rate
---            at ~61%. This is the single biggest operational
---            risk in the dataset.
+-- ANSWER:    Approximately 50.8% of all order lines are loss-making (4,264 of 8,399).
+--            Furniture is the highest-risk category, with 53.5% of orders
+--            generating losses and the largest cumulative loss (-$435.6K).
+--            Office Supplies has a nearly identical loss rate (53.4%) but a smaller
+--            finacial impact, while Technology records fewer loss-making orders (42.7%)
+--            yet still incurs substantial total losses (-$382.4K).
 -- ────────────────────────────────────────────────────────────
 SELECT
     product_category,
@@ -289,12 +325,15 @@ ORDER BY loss_rate_pct DESC;
 
 -- ────────────────────────────────────────────────────────────
 -- BQ-09 | Is there a seasonal sales pattern — which months
---          consistently generate the highest revenue?
+--         consistently generate the highest revenue?
 -- RATIONALE: Seasonality shapes inventory, staffing, and
 --            promotional planning.
--- ANSWER:    January ($2,018 avg/order) and December ($2,035)
---            are the strongest months. May–August is the
---            consistent low season. Q4 outperforms Q2/Q3.
+-- ANSWER:    December is the strongest month, generating $1.47M in sales
+--            (9.84% of annual revenue) with the highest average order value ($2,035).
+--            January follows closely with $1.44M in sales (9.69%) and a $2,018
+--            average order value. Sales soften from May through August,
+--            particularly in June (6.91% of annual revenue), before
+--            rebounding through Q4.
 -- ────────────────────────────────────────────────────────────
 SELECT
     MONTH(order_date)             AS month_num,
@@ -302,7 +341,10 @@ SELECT
     COUNT(*)                      AS total_orders,
     ROUND(SUM(sales), 2)          AS total_sales,
     ROUND(AVG(sales), 2)          AS avg_order_value,
-    ROUND(SUM(profit), 2)         AS total_profit
+    ROUND(SUM(profit), 2)         AS total_profit,
+    ROUND(SUM(sales) /
+    (SELECT SUM(sales) 
+    FROM orders) * 100,2) 		  AS sales_share_pct
 FROM orders
 GROUP BY month_num, month_name
 ORDER BY month_num;
@@ -313,18 +355,19 @@ ORDER BY month_num;
 --          category or region?
 -- RATIONALE: Returns are a revenue leakage signal; patterns
 --            suggest quality, expectation, or logistical issues.
--- ANSWER:    Furniture has the highest return rate (11.2%)
---            vs Technology (10.6%) and Office Supplies (10.0%).
---            Returns are spread evenly, but Furniture's
---            combination of high returns AND low margin makes
---            it the highest-risk category in the portfolio.
+-- ANSWER:    Technology in Ontario (13.73%) and Furniture in Yukon (13.64%) record
+--            the highest return rates. Most major regions fall within a 9–13% return range,
+--            while Nunavut’s low rates reflect a much smaller order base.
+--            Combined with Furniture’s high loss rate and relatively lower profitability
+--            from earlier analyses, elevated return rates reinforce Furniture
+--            as the portfolio’s highest operational risk category.
 -- ────────────────────────────────────────────────────────────
 SELECT
     o.product_category,
     o.region,
-    COUNT(o.order_id)                                          AS total_orders,
-    COUNT(r.order_id)                                          AS returned_orders,
-    ROUND(COUNT(r.order_id) / COUNT(o.order_id) * 100, 2)     AS return_rate_pct,
+    COUNT(DISTINCT o.order_id) 								   AS total_orders,
+    COUNT(DISTINCT r.order_id) 								   AS returned_orders,
+    ROUND(COUNT(r.order_id) / COUNT(o.order_id) * 100, 2)      AS return_rate_pct,
     ROUND(SUM(o.sales), 2)                                     AS total_sales,
     ROUND(SUM(o.profit), 2)                                    AS total_profit
 FROM orders o
