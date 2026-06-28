@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Taofeek Salami — Superstore Sales Database Exploration II</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --surface: #13161e;
+      --surface2: #1a1e28;
+      --border: #252a38;
+      --accent: #c8a96e;
+      --accent2: #e07b6a;
+      --text: #e8e4dc;
+      --muted: #7a7f8e;
+      --green: #6dbf8a;
+      --red: #e07b6a;
+      --purple: #b48ecf;
+      --blue: #7eb8c9;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ── HERO ── */
+    header {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 6rem 8vw 4rem;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      top: -10%;
+      right: -5%;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(224,123,106,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 5vw, 5rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    h1 .accent { color: var(--accent); }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .meta-item { display: flex; flex-direction: column; gap: 0.2rem; }
+
+    .meta-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .meta-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent);
+    }
+
+    .hero-bio {
+      max-width: 560px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.8;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s 0.35s ease both;
+    }
+
+    .badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.6rem;
+      border-radius: 2px;
+      border: 1px solid;
+    }
+
+    .badge-sql    { color: var(--accent);  border-color: rgba(200,169,110,0.3); background: rgba(200,169,110,0.07); }
+    .badge-mysql  { color: var(--blue);    border-color: rgba(126,184,201,0.3); background: rgba(126,184,201,0.07); }
+    .badge-python { color: var(--blue);    border-color: rgba(126,184,201,0.3); background: rgba(126,184,201,0.07); }
+    .badge-pandas { color: var(--accent);  border-color: rgba(200,169,110,0.3); background: rgba(200,169,110,0.07); }
+    .badge-complete{ color: var(--green);  border-color: rgba(109,191,138,0.3); background: rgba(109,191,138,0.07); }
+
+    .hero-links {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .hero-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: color 0.2s;
+    }
+
+    .hero-link::before { content: '→'; color: var(--accent); }
+    .hero-link:hover { color: var(--accent); }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 8vw;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      animation: fadeUp 0.6s 0.6s ease both;
+    }
+
+    .scroll-hint::after {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 1px;
+      background: var(--muted);
+    }
+
+    /* ── LAYOUT ── */
+    main { position: relative; z-index: 1; }
+    section { padding: 5rem 8vw; border-top: 1px solid var(--border); }
+
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-weight: 700;
+      margin-bottom: 2rem;
+      line-height: 1.2;
+    }
+
+    /* ── KPI GRID ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .kpi-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .kpi-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .kpi-value.danger  { color: var(--red); }
+    .kpi-value.warning { color: #e8a87c; }
+    .kpi-value.good    { color: var(--green); }
+
+    .kpi-context {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+    }
+
+    /* ── FINDINGS GRID ── */
+    .findings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .finding-card {
+      background: var(--surface);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .finding-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--accent2);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .finding-card:hover { background: var(--surface2); }
+    .finding-card:hover::before { transform: scaleX(1); }
+
+    .finding-category {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .finding-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .finding-body {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .finding-body strong { color: var(--accent); font-weight: 500; }
+    .finding-body .danger { color: var(--red); font-weight: 500; }
+    .finding-body .good   { color: var(--green); font-weight: 500; }
+
+    .finding-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--border);
+      line-height: 1;
+      margin-top: auto;
+    }
+
+    /* ── INSIGHTS ── */
+    .insights-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .insight-item {
+      background: var(--surface);
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 1fr 3fr;
+      gap: 2rem;
+      transition: background 0.2s;
+    }
+
+    .insight-item:hover { background: var(--surface2); }
+
+    .insight-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .insight-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .insight-category {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .insight-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 0.8rem;
+    }
+
+    .insight-text {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .insight-text strong { color: var(--accent); font-weight: 500; }
+    .insight-text .danger { color: var(--red); font-weight: 500; }
+    .insight-text .good   { color: var(--green); font-weight: 500; }
+
+    /* ── BQ TABLE ── */
+    .bq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .bq-item {
+      background: var(--surface);
+      padding: 1.5rem 2rem;
+      display: grid;
+      grid-template-columns: 80px 1fr 2fr;
+      gap: 1.5rem;
+      align-items: start;
+      transition: background 0.2s;
+    }
+
+    .bq-item:hover { background: var(--surface2); }
+
+    .bq-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      padding-top: 0.2rem;
+    }
+
+    .bq-question {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .bq-finding {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .bq-finding strong { color: var(--accent); font-weight: 500; }
+    .bq-finding .danger { color: var(--red); font-weight: 500; }
+    .bq-finding .good   { color: var(--green); font-weight: 500; }
+
+    /* ── PROCESS ── */
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .process-card {
+      background: var(--surface);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      transition: background 0.2s;
+    }
+
+    .process-card:hover { background: var(--surface2); }
+
+    .process-phase {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .process-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .process-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── DATA NOTE ── */
+    .data-note {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--red);
+      padding: 1.5rem 2rem;
+      margin-top: 2rem;
+    }
+
+    .data-note-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 0.5rem;
+    }
+
+    .data-note p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── DELIVERABLE ── */
+    .deliverable-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent2);
+      padding: 2rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.2s;
+    }
+
+    .deliverable-card:hover { background: var(--surface2); }
+
+    .deliverable-icon {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--accent2);
+      line-height: 1;
+    }
+
+    .deliverable-content { flex: 1; }
+
+    .deliverable-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 0.5rem;
+    }
+
+    .deliverable-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .deliverable-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .deliverable-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: gap 0.2s;
+    }
+
+    .deliverable-link:hover { gap: 0.8rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 8vw;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-name { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--accent); }
+    .footer-links { display: flex; gap: 1.5rem; }
+
+    .footer-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-link:hover { color: var(--accent); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 640px) {
+      .insight-item { grid-template-columns: 1fr; gap: 1rem; }
+      .bq-item { grid-template-columns: 1fr; gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<header>
+  <div class="hero-tag">SQL · Python · Pandas · Matplotlib · MySQL · 8,399 Orders</div>
+  <h1>Superstore<br/><span class="accent">Sales Database</span><br/>Exploration II</h1>
+
+  <div class="hero-meta">
+    <div class="meta-item">
+      <span class="meta-label">Dataset</span>
+      <span class="meta-value">8,399 Orders · 4 Tables</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Tools</span>
+      <span class="meta-value">MySQL · Python · Pandas</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Focus</span>
+      <span class="meta-value">Revenue · Margin · Risk</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Completed</span>
+      <span class="meta-value">Jun 2026</span>
+    </div>
+  </div>
+
+  <p class="hero-bio">A full end-to-end pipeline on a Canadian retail dataset spanning 2009–2012. Designed a normalised MySQL schema, built a Python/SQLAlchemy ETL pipeline from Excel, then answered 10 self-generated business questions with Pandas analysis and Matplotlib visualisations.</p>
+
+  <div class="badge-row">
+    <span class="badge badge-sql">SQL</span>
+    <span class="badge badge-mysql">MySQL</span>
+    <span class="badge badge-python">Python</span>
+    <span class="badge badge-pandas">Pandas</span>
+    <span class="badge badge-complete">Complete</span>
+  </div>
+
+  <div class="hero-links">
+    <a class="hero-link" href="https://github.com/HarjiiBoss/Superstore_Database" target="_blank">GitHub Repo</a>
+    <a class="hero-link" href="https://harjiiboss.github.io" target="_blank">Portfolio</a>
+  </div>
+
+  <div class="scroll-hint">Scroll to explore</div>
+</header>
+
+<main>
+
+  <!-- ═══ PERFORMANCE SNAPSHOT ═══ -->
+  <section>
+    <div class="section-label reveal">Performance Snapshot</div>
+    <h2 class="reveal">Key Metrics at a Glance</h2>
+
+    <div class="kpi-grid reveal">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-value">$14.9M</div>
+        <div class="kpi-context">2009–2012 combined</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Profit</div>
+        <div class="kpi-value good">$1.52M</div>
+        <div class="kpi-context">10.2% overall margin</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Loss-Making Orders</div>
+        <div class="kpi-value danger">50.4%</div>
+        <div class="kpi-context">4,232 of 8,399 order lines</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Furniture Margin</div>
+        <div class="kpi-value danger">2.3%</div>
+        <div class="kpi-context">on $5.18M in sales</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Technology Margin</div>
+        <div class="kpi-value good">14.8%</div>
+        <div class="kpi-context">highest category margin</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Discount Break-Even</div>
+        <div class="kpi-value warning">20%</div>
+        <div class="kpi-context">above this, avg profit turns negative</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ KEY FINDINGS ═══ -->
+  <section>
+    <div class="section-label reveal">Analysis</div>
+    <h2 class="reveal">What the Data Reveals</h2>
+
+    <div class="findings-grid reveal">
+
+      <div class="finding-card">
+        <div class="finding-category">Revenue Risk</div>
+        <div class="finding-title">50.4% of Orders Lose Money — The Biggest Operational Risk</div>
+        <div class="finding-body">More than half of all <strong>8,399 order lines</strong> in this dataset are loss-making. Furniture has the highest loss rate at <span class="danger">53.5%</span> — meaning more than 1 in 2 Furniture orders actively destroys margin. This is not an edge case; it is the dominant pattern across the dataset.</div>
+        <div class="finding-number">01</div>
+      </div>
+
+      <div class="finding-card">
+        <div class="finding-category">Margin Alert</div>
+        <div class="finding-title">Furniture Earns 2.3% Margin on $5.18M in Sales</div>
+        <div class="finding-body">Furniture is the second-highest revenue category but delivers only <span class="danger">2.3% profit margin</span> — the weakest of all three categories. Technology earns <strong>14.8%</strong> on $5.98M and Office Supplies earns <strong>13.8%</strong> on $3.75M. Furniture's revenue disguises a near-zero return on every dollar sold.</div>
+        <div class="finding-number">02</div>
+      </div>
+
+      <div class="finding-card">
+        <div class="finding-category">Discount Impact</div>
+        <div class="finding-title">Discounts Above 20% Flip Average Profit Negative</div>
+        <div class="finding-body">Orders with <strong>no discount</strong> average <strong>$249 profit</strong>. At the 21–30% discount band, average order profit drops to <span class="danger">–$249</span>. The break-even point sits between 11–20%. Deep discounting is not a sales lever — it is a systematic profit drain operating across hundreds of orders.</div>
+        <div class="finding-number">03</div>
+      </div>
+
+      <div class="finding-card">
+        <div class="finding-category">Revenue Trend</div>
+        <div class="finding-title">2009's $4.21M Revenue Peak Has Not Been Recovered</div>
+        <div class="finding-body">Revenue declined <strong>15.7%</strong> from 2009 to 2011 before a partial recovery of <strong>+8.2%</strong> in 2012. The business generated <strong>$3.72M</strong> in 2012 — still <strong>$496K below</strong> the 2009 peak. Three years on, the top line has not returned to its starting point.</div>
+        <div class="finding-number">04</div>
+      </div>
+
+      <div class="finding-card">
+        <div class="finding-category">Seasonal Pattern</div>
+        <div class="finding-title">December and January Are Peak Months — May–August Is the Low Season</div>
+        <div class="finding-body">December accounts for <strong>9.87%</strong> of annual sales and January <strong>9.66%</strong> — the two strongest months. April through June are the weakest at roughly <strong>6% each</strong>. Q4 consistently outperforms Q2 and Q3 across all four years in the dataset.</div>
+        <div class="finding-number">05</div>
+      </div>
+
+      <div class="finding-card">
+        <div class="finding-category">Regional Performance</div>
+        <div class="finding-title">West Leads Revenue but Ontario Leads Profit Margin</div>
+        <div class="finding-body">The West region generates the most revenue at <strong>$3.6M</strong> but delivers only an <span class="danger">8.26% margin</span> — below the fleet average. Ontario earns <strong>11.32% margin</strong> on $3.06M. Nunavut is the weakest market at <span class="danger">2.44% margin</span> on $117K — the lowest priority region in the portfolio.</div>
+        <div class="finding-number">06</div>
+      </div>
+
+    </div>
+
+    <div class="data-note reveal">
+      <div class="data-note-label">Critical Finding</div>
+      <p>The 50.4% loss-order rate is the single most important number in this dataset. It means the business's profitability is being sustained by roughly half its orders while the other half actively erode it. Addressing the discount strategy and Furniture category pricing should be the first priority for any margin improvement initiative.</p>
+    </div>
+  </section>
+
+  <!-- ═══ 10 BUSINESS QUESTIONS ═══ -->
+  <section>
+    <div class="section-label reveal">Business Questions</div>
+    <h2 class="reveal">10 Self-Generated Questions & Answers</h2>
+
+    <div class="bq-list reveal">
+
+      <div class="bq-item">
+        <div class="bq-num">BQ-01</div>
+        <div class="bq-question">How has total revenue trended year-over-year?</div>
+        <div class="bq-finding">Revenue peaked at <strong>$4.21M in 2009</strong> and declined for two consecutive years, dropping <span class="danger">15.7%</span> by 2011. A partial recovery of +8.2% in 2012 still left the business <strong>$496K below its 2009 peak</strong>.</div>
+      </div>
+
+      <div class="bq-item">
+        <div class="bq-num">BQ-02</div>
+        <div class="bq-question">Which product category generates the highest profit margin?</div>
+        <div class="bq-finding"><strong class="good" style="color:var(--green)">Technology leads at 14.8%</strong> ($886K profit). Office Supplies earns 13.8%. Furniture earns only <span class="danger">2.3%</span> despite generating $5.18M in revenue.</div>
+      </div>
+
+      <div class="bq-item">
+        <div class="bq-num">BQ-03</div>
+        <div class="bq-question">Which sub-categories are destroying profit (bottom 5)?</div>
+        <div class="bq-finding">Tables lost <span class="danger">–$99.1K</span> on $1.77M in sales (–5.6% margin). Four of the five worst sub-categories are in Furniture — Bookcases, Office Furnishings, and Scissors round out the list.</div>
+      </div>
+
+      <div class="bq-item">
+        <div class="bq-num">BQ-04</div>
+        <div class="bq-question">Does a higher discount always lead to lower profit?</div>
+        <div class="bq-finding">Yes. Orders with 0% discount average <strong>$249 profit</strong>. At 21–30% discount, average profit is <span class="danger">–$249</span>. The profit break-even sits between 11–20% discount.</div>
+      </div>
+
+      <div class="bq-item">
+        <div class="bq-num">BQ-05</div>
+        <div class="bq-question">Which shipping mode is most cost-efficient?</div>
+        <div class="bq-finding">Regular Air handles <strong>88% of orders</strong> at only 0.45% shipping cost as a percentage of sales — the most efficient mode. Delivery Truck costs 1.62% of sales per order despite carrying fewer shipments.</div>
+      </div>
+
+      <div class="bq-item">
+        <div class="bq-num">BQ-06</div>
+        <div class="bq-question">Which customer segment is most profitable?</div>
+        <div class="bq-finding">Corporate generates the most total profit at <strong>$600K</strong>. Home Office leads on margin at <strong>13.2%</strong>. Small Business delivers the highest average order value at <strong>$4,611</strong> — the most efficient segment per transaction.</div>
+      </div>
+
+      <div class="bq-item">
+        <div class="bq-num">BQ-07</div>
+        <div class="bq-question">Which regions underperform on margin relative to sales?</div>
+        <div class="bq-finding">West leads in revenue ($3.6M) but earns only <span class="danger">8.26% margin</span> — below average. Ontario achieves <strong>11.32% margin</strong>. Nunavut is the worst market at <span class="danger">2.44% margin</span> on $117K in sales.</div>
+      </div>
+
+      <div class="bq-item">
+        <div class="bq-num">BQ-08</div>
+        <div class="bq-question">What share of orders result in a net loss, by category?</div>
+        <div class="bq-finding"><span class="danger">50.4% of all 8,399 orders lose money</span>. Furniture has the highest loss rate at 53.5% and the largest total loss at –$435K — the single biggest operational risk in the dataset.</div>
+      </div>
+
+      <div class="bq-item">
+        <div class="bq-num">BQ-09</div>
+        <div class="bq-question">Is there a seasonal sales pattern by month?</div>
+        <div class="bq-finding">December (<strong>9.87%</strong> of annual sales) and January (<strong>9.66%</strong>) are the two peak months. April through June are consistently the weakest at ~6% each. Q4 outperforms Q2 and Q3 across all four years.</div>
+      </div>
+
+      <div class="bq-item">
+        <div class="bq-num">BQ-10</div>
+        <div class="bq-question">Do returned orders follow a pattern by category or region?</div>
+        <div class="bq-finding">Technology in Ontario has the highest return rate at <span class="danger">13.78%</span>, followed by Furniture in Yukon at 13.64%. Furniture's combination of high returns, <span class="danger">2.3% margin</span>, and 53.5% loss rate makes it the highest-risk category overall.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ BUSINESS INSIGHTS ═══ -->
+  <section>
+    <div class="section-label reveal">Business Insights</div>
+    <h2 class="reveal">Structured Analytical Insights</h2>
+
+    <div class="insights-list reveal">
+
+      <div class="insight-item">
+        <div class="insight-left">
+          <div class="insight-number">01</div>
+          <div class="insight-category">Margin Strategy</div>
+        </div>
+        <div class="insight-right">
+          <div class="insight-title">Furniture Is a Revenue Trap — High Sales, Near-Zero Return</div>
+          <div class="insight-text">Furniture generates <strong>$5.18M</strong> in revenue — the second-highest category — but converts this into only <strong>$117K in profit</strong> at a <span class="danger">2.3% margin</span>. Combined with a <span class="danger">53.5% loss-order rate</span> and a high return rate, the category is absorbing disproportionate operational cost without delivering commensurate return. A full pricing and cost review of Furniture sub-categories — particularly Tables, which lost $99K — is the single highest-leverage intervention available.</div>
+        </div>
+      </div>
+
+      <div class="insight-item">
+        <div class="insight-left">
+          <div class="insight-number">02</div>
+          <div class="insight-category">Discount Policy</div>
+        </div>
+        <div class="insight-right">
+          <div class="insight-title">The Discount Strategy Is Destroying Value Above 20%</div>
+          <div class="insight-text">The data shows a clear and consistent relationship: as discounts increase beyond 20%, average order profit turns <span class="danger">negative</span>. Orders with no discount average <strong>$249 profit</strong>; orders at 21–30% average <span class="danger">–$249</span>. This is not a volume-offset trade-off — total profit in the deep-discount bands is also negative. A policy cap at 20% discount — with exceptions requiring sign-off — would be the most direct lever to improve overall profitability.</div>
+        </div>
+      </div>
+
+      <div class="insight-item">
+        <div class="insight-left">
+          <div class="insight-number">03</div>
+          <div class="insight-category">Portfolio Prioritisation</div>
+        </div>
+        <div class="insight-right">
+          <div class="insight-title">Double Down on Technology — It Earns 14.8% Margin at Scale</div>
+          <div class="insight-text">Technology generates <strong>$886K in profit</strong> on $5.98M in sales at a <strong>14.8% margin</strong> — the strongest category by every measure. It also has the lowest loss-order rate among all three categories. Resourcing, promotional spend, and sales team focus should be weighted toward Technology and high-performing Office Supplies sub-categories, while Furniture volume is allowed to contract in favour of quality over quantity.</div>
+        </div>
+      </div>
+
+      <div class="insight-item">
+        <div class="insight-left">
+          <div class="insight-number">04</div>
+          <div class="insight-category">Seasonal Planning</div>
+        </div>
+        <div class="insight-right">
+          <div class="insight-title">Inventory and Promotions Should Be Timed Around the Dec–Jan Peak</div>
+          <div class="insight-text">December and January consistently account for nearly <strong>20% of annual sales</strong> combined across all four years. The May–August low season accounts for a similar proportion but at significantly lower average order values. Promotional spend and inventory build-up should be front-loaded ahead of December, while the low season offers an opportunity for targeted retention campaigns to smooth revenue volatility.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ PROCESS ═══ -->
+  <section>
+    <div class="section-label reveal">Methodology</div>
+    <h2 class="reveal">End-to-End Analytical Pipeline</h2>
+
+    <div class="process-grid reveal">
+      <div class="process-card">
+        <div class="process-phase">Phase 0</div>
+        <div class="process-title">Database Setup</div>
+        <div class="process-desc">Created the <code>superstore</code> MySQL database with a normalised 4-table schema: orders, customers, returns, regional_managers. Five indexes applied on orders for query performance.</div>
+      </div>
+      <div class="process-card">
+        <div class="process-phase">Phase 1</div>
+        <div class="process-title">Python ETL Pipeline</div>
+        <div class="process-desc">Python/SQLAlchemy ETL pipeline reads all sheets from the Excel source, standardises column names, applies schema alignment transformations, and loads 8,399 orders + 5,496 customers + 572 returns into MySQL.</div>
+      </div>
+      <div class="process-card">
+        <div class="process-phase">Phase 2</div>
+        <div class="process-title">Exploration & Cleaning</div>
+        <div class="process-desc">Inspected dtypes, null distribution, and unique values. Engineered year, month, discount bucket, and is_loss columns. Documented 63 null values in product_base_margin as the only data quality gap.</div>
+      </div>
+      <div class="process-card">
+        <div class="process-phase">Phase 3</div>
+        <div class="process-title">10 Business Questions</div>
+        <div class="process-desc">Self-generated 10 business questions covering revenue trend, margin analysis, discount impact, shipping efficiency, segment profitability, regional performance, loss-order rate, seasonality, and returns patterns.</div>
+      </div>
+      <div class="process-card">
+        <div class="process-phase">Phase 4</div>
+        <div class="process-title">SQL Analysis</div>
+        <div class="process-desc">Each question answered with production-quality SQL: CASE bucketing, LEFT JOINs for returns, ROUND and pct calculations, and documented RATIONALE + ANSWER comments per query.</div>
+      </div>
+      <div class="process-card">
+        <div class="process-phase">Phase 5</div>
+        <div class="process-title">Python Visualisation</div>
+        <div class="process-desc">10 Matplotlib/Seaborn charts — dual-axis bar charts, horizontal bar charts, annotated margin comparisons, and a seasonal line chart with fill. Each chart paired with a plain-language key finding.</div>
+      </div>
+    </div>
+
+    <div class="deliverable-card reveal">
+      <div class="deliverable-icon">↗</div>
+      <div class="deliverable-content">
+        <div class="deliverable-label">Full Project Repository</div>
+        <div class="deliverable-title">Superstore Database — GitHub</div>
+        <div class="deliverable-desc">Repository contains the MySQL schema SQL file, the Jupyter Notebook with all executed outputs and charts, and the outputs folder with 10 exported chart PNGs. Scored 100/100 on the 3MTT / Darey Human Foundation IBM Data Analytics Pathway evaluation.</div>
+        <a class="deliverable-link" href="https://github.com/HarjiiBoss/Superstore_Database" target="_blank">View Repository →</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <span class="footer-name">Taofeek Salami</span>
+  <div class="footer-links">
+    <a class="footer-link" href="https://linkedin.com/in/taofeek-salami-460a93245" target="_blank">LinkedIn</a>
+    <a class="footer-link" href="https://github.com/HarjiiBoss" target="_blank">GitHub</a>
+    <a class="footer-link" href="mailto:salamitaofeek92@gmail.com">Email</a>
+  </div>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
