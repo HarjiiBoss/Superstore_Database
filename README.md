@@ -11,7 +11,7 @@ Superstore_Database/
 ├── notebook/
 │   └── superstore_database.ipynb   # Python ETL pipeline (Excel → MySQL)
 ├── sql/
-│   └── superstore_database.sql     # Database schema + 10 business questions
+│   └── Superstore_Database.sql     # Database schema + 10 business questions
 └── outputs/
     └── (query result exports)
 ```
@@ -100,14 +100,14 @@ SELECT ...
 |---|---|---|
 | **BQ-01** | How has total revenue trended year-over-year? | Revenue peaked at **$4.21M** in 2009 and declined to **$3.72M** by 2012. |
 | **BQ-02** | Which product category has the highest profit margin? | Technology leads with a **14.8%** margin, while Furniture earns only **2.3%** despite generating **$5.18M** in sales. |
-| **BQ-03** | Which sub-categories are destroying profit? | Tables alone lost **$99.1K**; all five worst-performing sub-categories are dominated by Furniture products. |
-| **BQ-04** | Does a higher discount always lead to lower profit? | Discounts above **20%** push average order profit into negative territory. |
+| **BQ-03** | Which sub-categories are destroying profit? | Tables alone lost **$99.1K** (−5.2% margin). Four sub-categories made a net loss: two in Furniture (Tables, Bookcases) and two in Office Supplies. |
+| **BQ-04** | Does a higher discount always lead to lower profit? | Orders with no discount average **$249** profit; the two orders at 21–30% average **−$249**. Only **5** orders carry a discount above 10%, so the break-even point is not well estimated. |
 | **BQ-05** | Which shipping mode is the most cost-efficient? | Regular Air handles **74.7%** of orders while shipping costs account for only **0.64%** of sales. |
 | **BQ-06** | Which customer segment is most profitable? | Corporate generates the highest total profit (~**$600K**), while Small Business records the highest profit margin (**11.32%**). |
 | **BQ-07** | Which regions underperform on profit margin relative to sales? | West generates the highest revenue but only an **8.26%** margin, while Nunavut records the weakest profitability (**2.44%**). |
 | **BQ-08** | What percentage of orders result in a net loss? | **50.8%** of all order lines are loss-making, with Furniture showing the highest loss rate (**53.5%**). |
 | **BQ-09** | Is there a seasonal sales pattern? | December and January consistently deliver the strongest sales performance, while May–August forms the annual low season. |
-| **BQ-10** | Do product returns follow a pattern by category or region? | Ontario and Yukon exhibit the highest return rates across Technology and Furniture, highlighting potential operational risk areas. |
+| **BQ-10** | Do product returns follow a pattern by category or region? | Technology in Ontario (**13.73%**) and Furniture in Yukon (**13.64%**) have the highest return rates. |
 
 ---
 
@@ -135,17 +135,17 @@ This project showcases practical SQL techniques commonly used in business analyt
 
 > All findings are derived directly from the dataset without assumptions beyond the query results.
 
-- 📉 Revenue has steadily declined since its **2009 peak of $4.21M**.
+- 📉 Revenue fell from its **2009 peak of $4.21M** to **$3.44M** in 2011 and recovered to **$3.72M** in 2012, still **$489K** below the peak.
 - 🪑 Furniture is the portfolio's highest-risk category, combining:
   - the lowest profit margin,
   - the highest loss rate,
   - and elevated return rates.
-- 💸 Discounts exceeding **20%** consistently eliminate profitability.
+- 💸 Discounted orders earn less on average, but only 5 orders carry a discount above 10%, too few to fix a discount threshold.
 - ⚠️ **50.8%** of all order lines generate negative profit, representing the largest operational concern identified.
 - 🌎 Northwest Territories achieves the strongest regional profit margin (**12.57%**) despite relatively modest sales.
 - 👔 Corporate and Small Business customers deliver the strongest overall profitability and should remain key strategic segments.
 - 📦 Regular Air provides the best balance between shipping cost and revenue generated.
-- 📅 Sales exhibit clear seasonality, with demand recovering strongly during the fourth quarter.
+- 📅 December (**9.84%** of sales) and January (**9.69%**) are the strongest months; June (**6.91%**) is the weakest.
 
 ---
 
