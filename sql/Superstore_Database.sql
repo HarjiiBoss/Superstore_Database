@@ -163,7 +163,7 @@ ORDER BY order_year;
 --            followed by Office Supplies (13.8%). Despite generating
 --            the second-highest revenue, Furniture achieves only
 --            a 2.3% margin, indicating that strong sales are not
---            are not translating into profitability.
+--            translating into profitability.
 -- ────────────────────────────────────────────────────────────
 SELECT
     product_category,
@@ -202,11 +202,10 @@ LIMIT 5;
 -- BQ-04 | Does a higher discount always lead to lower profit?
 -- RATIONALE: Tests whether the discount strategy is working
 --            or actively eroding margins.
--- ANSWER:    Orders with no discount average $248.93 profit.
---            In this dataset, the small number of orders discounted above 20%
---            had negative average profit (-$249.40), suggesting deep
---            discounts may erode profitability. More data is needed
---            before making a firm conclusion.
+-- ANSWER:    Order lines with no discount average $248.93 profit.
+--            Only two order lines are discounted above 20% (average
+--            profit -$249.40), and only five above 10%, so the data is
+--            too thin to say where discounting turns unprofitable.
 -- ────────────────────────────────────────────────────────────
 SELECT
     CASE
@@ -231,9 +230,9 @@ ORDER BY MIN(discount);
 -- RATIONALE: Shipping cost directly impacts net margin;
 --            over-use of premium modes reduces profit.
 -- ANSWER:    Regular Air is the most cost-efficient shipping mode,
---            handling 74.7% of orders while shipping costs represent
+--            handling 74.7% of order lines while shipping costs represent
 --            just 0.64% of sales. Delivery Truck has the highest
---            average shipping cost ($45.35/order) and the highest shipping
+--            average shipping cost ($45.35 per order line) and the highest shipping
 --            cost relative to sales (0.83%), though it supports
 --            high-value orders. Express Air is used less frequently and
 --            performs similarly to Regular Air in shipping cost
@@ -305,10 +304,10 @@ ORDER BY total_sales DESC;
 -- RATIONALE: Loss-making orders are a hidden margin drain;
 --            identifying them by category reveals root causes.
 -- ANSWER:    Approximately 50.8% of all order lines are loss-making (4,264 of 8,399).
---            Furniture is the highest-risk category, with 53.5% of orders
+--            Furniture is the highest-risk category, with 53.5% of its order lines
 --            generating losses and the largest cumulative loss (-$435.6K).
 --            Office Supplies has a nearly identical loss rate (53.4%) but a smaller
---            finacial impact, while Technology records fewer loss-making orders (42.7%)
+--            financial impact, while Technology has the lowest share of loss-making lines (42.7%)
 --            yet still incurs substantial total losses (-$382.4K).
 -- ────────────────────────────────────────────────────────────
 SELECT
@@ -329,11 +328,11 @@ ORDER BY loss_rate_pct DESC;
 -- RATIONALE: Seasonality shapes inventory, staffing, and
 --            promotional planning.
 -- ANSWER:    December is the strongest month, generating $1.47M in sales
---            (9.84% of annual revenue) with the highest average order value ($2,035).
+--            (9.84% of 2009–2012 sales) with the highest average order-line value ($2,035).
 --            January follows closely with $1.44M in sales (9.69%) and a $2,018
---            average order value. Sales soften from May through August,
---            particularly in June (6.91% of annual revenue), before
---            rebounding through Q4.
+--            average order-line value. Sales soften from May through August,
+--            particularly in June (6.91% of sales), before
+--            rising again from September.
 -- ────────────────────────────────────────────────────────────
 SELECT
     MONTH(order_date)             AS month_num,
@@ -356,11 +355,11 @@ ORDER BY month_num;
 -- RATIONALE: Returns are a revenue leakage signal; patterns
 --            suggest quality, expectation, or logistical issues.
 -- ANSWER:    Technology in Ontario (13.73%) and Furniture in Yukon (13.64%) record
---            the highest return rates. Most major regions fall within a 9–13% return range,
---            while Nunavut’s low rates reflect a much smaller order base.
---            Combined with Furniture’s high loss rate and relatively lower profitability
---            from earlier analyses, elevated return rates reinforce Furniture
---            as the portfolio’s highest operational risk category.
+--            the highest return rates. Outside Nunavut, whose rates rest on very few
+--            orders, return rates range from 6.4% to 13.7%. Furniture's overall
+--            return rate (10.9%) is only slightly above Technology's (10.5%) and
+--            Office Supplies' (10.1%), so returns add little to its risk beyond
+--            its loss rate.
 -- ────────────────────────────────────────────────────────────
 SELECT
     o.product_category,

@@ -1,0 +1,15 @@
+# .figures-allow — figures checked by hand that tools/check_figures.py cannot find in the outputs.
+# One figure per line, written as it appears in the text, then '#' and how it was derived.
+# List a figure only after checking the calculation. A typed or drifted figure is fixed, not listed.
+
+$489K    # revenue_yoy.csv: 2009 peak 4,209,139.46 - 2012 3,719,963.86 = 489,175.60
+18.3%    # revenue_yoy.csv: 2011 3,436,816.70 / 2009 4,209,139.46 - 1 = -18.35% (fall from the peak over two years)
+$14.9M   # profit_margin.csv total_sales: 5,984,248.18 + 3,752,762.10 + 5,178,590.54 = 14,915,600.82
+$1.52M   # profit_margin.csv total_profit: 886,313.52 + 518,021.46 + 117,432.99 = 1,521,767.97
+19.5%    # top_month_by_revenue.csv sales_share_pct: January 9.69 + December 9.84 = 19.53
+29.8%    # top_month_by_revenue.csv sales_share_pct: May 7.78 + June 6.91 + July 7.65 + August 7.48 = 29.82
+10.9%    # return_order.csv, Furniture: returned 172 / orders 1,578 across all regions = 10.90%
+10.5%    # return_order.csv, Technology: returned 198 / orders 1,887 = 10.49%
+10.1%    # return_order.csv, Office Supplies: returned 375 / orders 3,726 = 10.06%
+50.4%    # old value, quoted in README Corrections only
+$2,020   # old value, quoted in README Corrections only
